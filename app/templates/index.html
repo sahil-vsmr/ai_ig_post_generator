@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Instagram Post Generator</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      background: #f6f7fb;
+      color: #1f2933;
+    }
+    header {
+      padding: 18px 24px;
+      background: #111827;
+      color: #f9fafb;
+    }
+    main {
+      max-width: 960px;
+      margin: 24px auto 48px;
+      padding: 0 16px;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+    }
+    p {
+      margin: 0;
+      color: #e5e7eb;
+    }
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    }
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 4px;
+      font-weight: 600;
+      color: #374151;
+    }
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    button {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 10px;
+      color: #2563eb;
+      font-size: 14px;
+    }
+    .error {
+      color: #b91c1c;
+    }
+    .output {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco,
+        Consolas, "Liberation Mono", "Courier New", monospace;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-size: 13px;
+      min-height: 40px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+    img.preview {
+      margin-top: 12px;
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    small.muted {
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AI Instagram Post Generator</h1>
+    <p>Upload media (optional) and generate captions via the API.</p>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>1) Upload media (optional)</h2>
+      <form id="uploadForm">
+        <label for="file">Image file</label>
+        <input id="file" name="file" type="file" accept="image/*" required />
+        <button type="submit" id="uploadButton">Upload</button>
+        <div class="status" id="uploadStatus"></div>
+        <img id="preview" class="preview" alt="" style="display:none;" />
+      </form>
+      <small class="muted">Accepted types: jpg, png, webp</small>
+    </div>
+
+    <div class="card">
+      <h2>2) Generate caption + hashtags</h2>
+      <form id="generateForm">
+        <div class="row">
+          <div>
+            <label for="media_id">Media ID (from upload)</label>
+            <input id="media_id" name="media_id" type="text" placeholder="med_xxxx (optional)" />
+          </div>
+          <div>
+            <label for="topic">Topic</label>
+            <input id="topic" name="topic" type="text" placeholder="e.g., latte art in a cozy cafe" />
+          </div>
+        </div>
+        <label for="idea">Idea / context (optional)</label>
+        <textarea id="idea" name="idea" placeholder="What is special about this post?"></textarea>
+        <label for="suggestions">Suggestions to incorporate (optional)</label>
+        <textarea
+          id="suggestions"
+          name="suggestions"
+          placeholder="E.g., emphasize the cozy vibe, keep hashtags minimal, add a playful hook"
+        ></textarea>
+        <div class="row">
+          <div>
+            <label for="tone">Tone</label>
+            <select id="tone" name="tone">
+              <option value="friendly">Friendly</option>
+              <option value="playful">Playful</option>
+              <option value="professional">Professional</option>
+              <option value="bold">Bold</option>
+              <option value="informative">Informative</option>
+            </select>
+          </div>
+          <div>
+            <label for="style">Style</label>
+            <select id="style" name="style">
+              <option value="short">Short</option>
+              <option value="medium">Medium</option>
+              <option value="long">Long</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" id="generateButton">Generate</button>
+      </form>
+      <div class="status" id="generateStatus"></div>
+      <div class="output" id="output"></div>
+    </div>
+
+    <div class="card">
+      <h2>3) Review & publish to Instagram</h2>
+      <p class="muted" style="margin-bottom:10px;">Review/edit the caption, hashtags, and media URL. Click "Prefill from last generate" to pull the AI output.</p>
+      <div class="row">
+        <div>
+          <label for="pub_media_url">Public media URL</label>
+          <input id="pub_media_url" type="text" placeholder="https://.../uploads/your-image.jpg" />
+          <small class="muted">Use the S3 URL returned by upload.</small>
+        </div>
+      </div>
+      <label for="pub_caption">Caption</label>
+      <textarea id="pub_caption" placeholder="Reviewed caption to publish"></textarea>
+      <label for="pub_hashtags">Hashtags (space or comma separated)</label>
+      <input id="pub_hashtags" type="text" placeholder="#tag1 #tag2 #tag3" />
+      <label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+        <input id="pub_dry_run" type="checkbox" checked />
+        Dry run (create container only, do not publish)
+      </label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+        <button id="prefillButton" type="button">Prefill from last generate</button>
+        <button id="publishButton" type="button">Publish</button>
+      </div>
+      <div class="status" id="publishStatus"></div>
+      <div class="output" id="publishOutput"></div>
+    </div>
+  </main>
+
+  <script>
+    const uploadForm = document.getElementById("uploadForm");
+    const uploadButton = document.getElementById("uploadButton");
+    const uploadStatus = document.getElementById("uploadStatus");
+    const preview = document.getElementById("preview");
+    const mediaIdField = document.getElementById("media_id");
+    const generateForm = document.getElementById("generateForm");
+    const generateButton = document.getElementById("generateButton");
+    const generateStatus = document.getElementById("generateStatus");
+    const output = document.getElementById("output");
+    const pubCaption = document.getElementById("pub_caption");
+    const pubHashtags = document.getElementById("pub_hashtags");
+    const pubMediaUrl = document.getElementById("pub_media_url");
+    const pubDryRun = document.getElementById("pub_dry_run");
+    const publishButton = document.getElementById("publishButton");
+    const publishStatus = document.getElementById("publishStatus");
+    const publishOutput = document.getElementById("publishOutput");
+    const prefillButton = document.getElementById("prefillButton");
+
+    let lastUploadUrl = null;
+    let lastGenerate = null;
+
+    uploadForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const fileInput = document.getElementById("file");
+      if (!fileInput.files.length) {
+        uploadStatus.textContent = "Please choose a file first.";
+        uploadStatus.classList.add("error");
+        return;
+      }
+
+      uploadButton.disabled = true;
+      uploadStatus.textContent = "Uploading...";
+      uploadStatus.classList.remove("error");
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      try {
+        const response = await fetch("/media/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || "Upload failed");
+        }
+
+        mediaIdField.value = data.media_id;
+        uploadStatus.textContent = `Uploaded! media_id: ${data.media_id}`;
+        lastUploadUrl = data.url || null;
+        if (lastUploadUrl) {
+          pubMediaUrl.value = lastUploadUrl;
+        }
+
+        // Show a preview if the file can be served locally
+        if (data.url) {
+          const url = data.url.startsWith("uploaded_media")
+            ? `/uploads/${data.url.split("/").pop()}`
+            : data.url;
+          preview.src = url;
+          preview.style.display = "block";
+        }
+      } catch (error) {
+        uploadStatus.textContent = error.message;
+        uploadStatus.classList.add("error");
+        preview.style.display = "none";
+      } finally {
+        uploadButton.disabled = false;
+      }
+    });
+
+    generateForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      generateButton.disabled = true;
+      generateStatus.textContent = "Calling /post/generate...";
+      generateStatus.classList.remove("error");
+      output.textContent = "";
+
+      const payload = {
+        media_id: mediaIdField.value || null,
+        topic: document.getElementById("topic").value || null,
+        idea: document.getElementById("idea").value || null,
+        tone: document.getElementById("tone").value || "friendly",
+        style: document.getElementById("style").value || "short",
+        suggestions: document.getElementById("suggestions").value || null,
+      };
+
+      try {
+        const response = await fetch("/post/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || "Generation failed");
+        }
+
+        generateStatus.textContent = "Success!";
+        output.textContent = JSON.stringify(data, null, 2);
+        lastGenerate = data;
+        // Prefill publish fields automatically
+        if (data.caption) {
+          pubCaption.value = data.caption;
+        }
+        if (data.hashtags) {
+          pubHashtags.value = Array.isArray(data.hashtags) ? data.hashtags.join(" ") : data.hashtags;
+        }
+        if (lastUploadUrl) {
+          pubMediaUrl.value = lastUploadUrl;
+        }
+      } catch (error) {
+        generateStatus.textContent = error.message;
+        generateStatus.classList.add("error");
+        output.textContent = "";
+      } finally {
+        generateButton.disabled = false;
+      }
+    });
+
+    prefillButton.addEventListener("click", () => {
+      if (!lastGenerate) {
+        publishStatus.textContent = "No generated content to prefill.";
+        publishStatus.classList.add("error");
+        return;
+      }
+      publishStatus.textContent = "";
+      publishStatus.classList.remove("error");
+      if (lastGenerate.caption) {
+        pubCaption.value = lastGenerate.caption;
+      }
+      if (lastGenerate.hashtags) {
+        pubHashtags.value = Array.isArray(lastGenerate.hashtags) ? lastGenerate.hashtags.join(" ") : lastGenerate.hashtags;
+      }
+      if (lastUploadUrl) {
+        pubMediaUrl.value = lastUploadUrl;
+      }
+    });
+
+    publishButton.addEventListener("click", async () => {
+      publishButton.disabled = true;
+      publishStatus.textContent = "Calling /post/publish...";
+      publishStatus.classList.remove("error");
+      publishOutput.textContent = "";
+
+      const hashtagField = pubHashtags.value || "";
+      const hashtags = hashtagField
+        .split(/[,\s]+/)
+        .map((h) => h.trim())
+        .filter(Boolean);
+
+      const payload = {
+        caption: pubCaption.value,
+        media_url: pubMediaUrl.value,
+        hashtags: hashtags.length ? hashtags : null,
+        dry_run: !!pubDryRun.checked,
+      };
+
+      try {
+        const response = await fetch("/post/publish", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || "Publish failed");
+        }
+        publishStatus.textContent = payload.dry_run ? "Dry run OK (container created)." : "Published!";
+        publishOutput.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        publishStatus.textContent = error.message;
+        publishStatus.classList.add("error");
+        publishOutput.textContent = "";
+      } finally {
+        publishButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
+

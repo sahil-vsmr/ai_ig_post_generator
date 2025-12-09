@@ -1,0 +1,147 @@
+{
+    "info": {
+      "name": "AI IG Post Generator - Phase 1",
+      "_postman_id": "c2f1b9d5-1234-5678-9abc-abcdef123456",
+      "description": "Phase 1 endpoints for AI Instagram Post Generator MVP",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Health Check",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "http://127.0.0.1:8000/health/",
+            "protocol": "http",
+            "host": ["127.0.0.1"],
+            "port": "8000",
+            "path": ["health", ""]
+          }
+        },
+        "response": []
+      },
+      {
+        "name": "Upload Media",
+        "request": {
+          "method": "POST",
+          "header": [],
+          "body": {
+            "mode": "formdata",
+            "formdata": [
+              {
+                "key": "file",
+                "type": "file",
+                "src": "/path/to/your/photo.jpg"
+              }
+            ]
+          },
+          "url": {
+            "raw": "http://127.0.0.1:8000/media/upload",
+            "protocol": "http",
+            "host": ["127.0.0.1"],
+            "port": "8000",
+            "path": ["media", "upload"]
+          }
+        },
+        "response": []
+      },
+      {
+        "name": "Generate Post with Media ID",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"media_id\": \"med_ab12cd34\",\n  \"tone\": \"friendly\",\n  \"style\": \"short\"\n}"
+          },
+          "url": {
+            "raw": "http://127.0.0.1:8000/post/generate",
+            "protocol": "http",
+            "host": ["127.0.0.1"],
+            "port": "8000",
+            "path": ["post", "generate"]
+          }
+        },
+        "response": []
+      },
+      {
+        "name": "Generate Post with Topic",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"topic\": \"Goa travel tips\",\n  \"tone\": \"inspirational\"\n}"
+          },
+          "url": {
+            "raw": "http://127.0.0.1:8000/post/generate",
+            "protocol": "http",
+            "host": ["127.0.0.1"],
+            "port": "8000",
+            "path": ["post", "generate"]
+          }
+        },
+        "response": []
+      },
+      {
+        "name": "Generate Post with Idea",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"idea\": \"sunset beach walk\",\n  \"tone\": \"fun\",\n  \"style\": \"short\"\n}"
+          },
+          "url": {
+            "raw": "http://127.0.0.1:8000/post/generate",
+            "protocol": "http",
+            "host": ["127.0.0.1"],
+            "port": "8000",
+            "path": ["post", "generate"]
+          }
+        },
+        "response": []
+      },
+      {
+        "name": "AI Ideation Mode (No Input)",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{}"
+          },
+          "url": {
+            "raw": "http://127.0.0.1:8000/post/generate",
+            "protocol": "http",
+            "host": ["127.0.0.1"],
+            "port": "8000",
+            "path": ["post", "generate"]
+          }
+        },
+        "response": []
+      }
+    ]
+  }
+  

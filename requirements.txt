@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+pydantic-settings
+requests
+python-dotenv
+jinja2
+
+# Optional AI/ML placeholders
+openai
+huggingface-hub
+Pillow
+
+boto3

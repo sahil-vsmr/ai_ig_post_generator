@@ -1,4 +1,6 @@
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -20,11 +22,22 @@ class Settings(BaseSettings):
     instagram_publish_enabled: bool = False
 
     model_config = SettingsConfigDict(
+        # Load .env file if it exists (for local development)
+        # Environment variables always take precedence
         env_file=".env",
         env_file_encoding="utf-8",
         env_ignore_empty=True,
-        case_sensitive=False
+        case_sensitive=False,
     )
+
+    @field_validator("llm_api_key", mode="before")
+    @classmethod
+    def get_llm_api_key_from_env(cls, v):
+        # Explicitly check environment variable if not set from .env or field
+        # This ensures Railway environment variables are always read
+        if v:
+            return v
+        return os.getenv("LLM_API_KEY")
 
 
 settings = Settings()

@@ -19,7 +19,12 @@ class Settings(BaseSettings):
     instagram_graph_base_url: str = "https://graph.facebook.com/v21.0"
     instagram_publish_enabled: bool = False
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_ignore_empty=True,
+        case_sensitive=False
+    )
 
 
 settings = Settings()

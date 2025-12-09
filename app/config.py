@@ -37,7 +37,21 @@ class Settings(BaseSettings):
         # This ensures Railway environment variables are always read
         if v:
             return v
-        return os.getenv("LLM_API_KEY")
+        # Try both LLM_API_KEY and OPENAI_API_KEY for compatibility
+        return os.getenv("LLM_API_KEY") or os.getenv("OPENAI_API_KEY")
 
 
+# Initialize settings and log debug info
 settings = Settings()
+
+# Debug logging (only log that we're checking, not the actual key value)
+if not settings.llm_api_key:
+    print("⚠️  WARNING: LLM_API_KEY not found in settings")
+    print(f"   Checking os.getenv('LLM_API_KEY'): {bool(os.getenv('LLM_API_KEY'))}")
+    print(f"   Checking os.getenv('OPENAI_API_KEY'): {bool(os.getenv('OPENAI_API_KEY'))}")
+    # Show all env vars that contain 'API' or 'KEY' for debugging
+    api_key_vars = {k: "***" for k in os.environ.keys() if 'API' in k.upper() or 'KEY' in k.upper()}
+    if api_key_vars:
+        print(f"   Found environment variables with 'API' or 'KEY': {list(api_key_vars.keys())}")
+else:
+    print("✅ LLM_API_KEY loaded successfully")
